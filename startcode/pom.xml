@@ -78,7 +78,7 @@
 				</configuration>
 			</plugin>
 			<!-- experimental: use for fat jar, but removes module encapsulation -->
-			<!--plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
 				<version>3.2.0</version>
@@ -97,7 +97,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin-->
+			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>

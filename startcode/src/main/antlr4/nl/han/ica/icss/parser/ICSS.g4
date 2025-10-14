@@ -1,4 +1,4 @@
-grammar ICSS;
+ grammar ICSS;
 
 //--- LEXER: ---
 
@@ -45,5 +45,11 @@ ASSIGNMENT_OPERATOR: ':=';
 
 
 //--- PARSER: ---
-stylesheet: EOF;
+stylesheet: (stylerule)* EOF;
+stylerule: selector OPEN_BRACE (declaration)* CLOSE_BRACE;
 
+declaration: LOWER_IDENT COLON value SEMICOLON;
+
+value: COLOR | PIXELSIZE | PERCENTAGE;
+
+selector: LOWER_IDENT | CLASS_IDENT | ID_IDENT;
