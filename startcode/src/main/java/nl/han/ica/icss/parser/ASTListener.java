@@ -6,15 +6,20 @@ import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.ColorLiteral;
 import nl.han.ica.icss.ast.literals.PercentageLiteral;
 import nl.han.ica.icss.ast.literals.PixelLiteral;
+import nl.han.ica.icss.ast.operations.AddOperation;
+import nl.han.ica.icss.ast.operations.MultiplyOperation;
+import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.selectors.ClassSelector;
 import nl.han.ica.icss.ast.selectors.IdSelector;
 import nl.han.ica.icss.ast.selectors.TagSelector;
+import nl.han.ica.icss.ast.literals.*;
+
 
 /**
  * This class extracts the ICSS Abstract Syntax Tree from the Antlr Parse tree.
  */
 public class ASTListener extends ICSSBaseListener {
-	
+
 	//Accumulator attributes:
 	private AST ast;
 
@@ -25,11 +30,12 @@ public class ASTListener extends ICSSBaseListener {
 		ast = new AST();
 		currentContainer = new HANStack<>();
 	}
-    public AST getAST() {
-        return ast;
-    }
 
-//	Stylesheet
+	public AST getAST() {
+		return ast;
+	}
+
+	//	Stylesheet
 	@Override
 	public void enterStylesheet(ICSSParser.StylesheetContext ctx) {
 		currentContainer.push(new Stylesheet());
@@ -41,7 +47,7 @@ public class ASTListener extends ICSSBaseListener {
 		ast.setRoot(styleSheet);
 	}
 
-//	StyleRule
+	//	StyleRule
 	@Override
 	public void enterStylerule(ICSSParser.StyleruleContext ctx) {
 		currentContainer.push(new Stylerule());
@@ -53,7 +59,7 @@ public class ASTListener extends ICSSBaseListener {
 		currentContainer.peek().addChild(stylerule);
 	}
 
-//	Selector
+	//	Selector
 	@Override
 	public void exitSelector(ICSSParser.SelectorContext ctx) {
 		Selector selector;
@@ -67,32 +73,103 @@ public class ASTListener extends ICSSBaseListener {
 		currentContainer.peek().addChild(selector);
 	}
 
-//	Declaration
+	//	Declaration
 	@Override
 	public void enterDeclaration(ICSSParser.DeclarationContext ctx) {
 		currentContainer.push(new Declaration());
 	}
 
-//	??
+
 	@Override
 	public void exitDeclaration(ICSSParser.DeclarationContext ctx) {
 		Declaration declaration = (Declaration) currentContainer.pop();
+		declaration.property = new PropertyName(ctx.LOWER_IDENT().getText());
 		currentContainer.peek().addChild(declaration);
 	}
 
-// Literal/Value
+	// VariableAssignment
 	@Override
-	public void exitValue(ICSSParser.ValueContext ctx) {
-		Expression expression;
+	public void enterVariableAssignment(ICSSParser.VariableAssignmentContext ctx) {
+		VariableAssignment variableAssignment = new VariableAssignment();
+		variableAssignment.name = new VariableReference(ctx.CAPITAL_IDENT().getText());
+		currentContainer.push(variableAssignment);
+	}
+
+	@Override
+	public void exitVariableAssignment(ICSSParser.VariableAssignmentContext ctx) {
+		VariableAssignment va = (VariableAssignment) currentContainer.pop();
+		currentContainer.peek().addChild(va);
+	}
+
+
+	//	Expressions
+	@Override
+	public void enterExpression(ICSSParser.ExpressionContext ctx) {
+		if (ctx.MUL() != null) {
+			currentContainer.push(new MultiplyOperation());
+		} else if (ctx.PLUS() != null) {
+			currentContainer.push(new AddOperation());
+		} else if (ctx.MIN() != null) {
+			currentContainer.push(new SubtractOperation());
+		}
+	}
+
+	@Override
+	public void exitExpression(ICSSParser.ExpressionContext ctx) {
+		if (ctx.MUL() != null || ctx.PLUS() != null || ctx.MIN() != null) {
+			Operation operation = (Operation) currentContainer.pop();
+			currentContainer.peek().addChild(operation);
+		} else if (ctx.CAPITAL_IDENT() != null) {
+			currentContainer.peek().addChild(new VariableReference(ctx.CAPITAL_IDENT().getText()));
+		}
+	}
+
+//	Literals
+	@Override
+	public void exitLiteral(ICSSParser.LiteralContext ctx) {
+		Literal literal;
 
 		if (ctx.COLOR() != null) {
-			expression = new ColorLiteral(ctx.COLOR().getText());
+			literal = new ColorLiteral(ctx.COLOR().getText());
+		} else if (ctx.PIXELSIZE() != null) {
+			literal = new PixelLiteral(ctx.PIXELSIZE().getText());
 		} else if (ctx.PERCENTAGE() != null) {
-			expression = new PercentageLiteral(ctx.PERCENTAGE().getText());
+			literal = new PercentageLiteral(ctx.PERCENTAGE().getText());
+		} else if (ctx.SCALAR() != null) {
+			literal = new ScalarLiteral(ctx.SCALAR().getText());
+		} else if (ctx.TRUE() != null) {
+			literal = new BoolLiteral("TRUE");
 		} else {
-			expression = new PixelLiteral(ctx.PIXELSIZE().getText());
+			literal = new BoolLiteral("FALSE");
 		}
 
-		currentContainer.peek().addChild(expression);
+		currentContainer.peek().addChild(literal);
 	}
+
+//	If
+	@Override
+	public void enterIfClause(ICSSParser.IfClauseContext ctx) {
+		currentContainer.push(new IfClause());
+	}
+
+	@Override
+	public void exitIfClause(ICSSParser.IfClauseContext ctx) {
+		IfClause ifClause = (IfClause) currentContainer.pop();
+		currentContainer.peek().addChild(ifClause);
+	}
+
+//	Else
+	@Override
+	public void enterElseClause(ICSSParser.ElseClauseContext ctx) {
+		currentContainer.push(new ElseClause());
+	}
+
+	@Override
+	public void exitElseClause(ICSSParser.ElseClauseContext ctx) {
+		ElseClause elseClause = (ElseClause) currentContainer.pop();
+		currentContainer.peek().addChild(elseClause);
+	}
+
+
+
 }

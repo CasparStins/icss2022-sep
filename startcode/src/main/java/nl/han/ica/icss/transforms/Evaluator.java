@@ -14,17 +14,36 @@ import java.util.LinkedList;
 
 public class Evaluator implements Transform {
 
-    private IHANLinkedList<HashMap<String, Literal>> variableValues;
+    private LinkedList<HashMap<String, Literal>> variableValues;
 
     public Evaluator() {
-        //variableValues = new HANLinkedList<>();
+        variableValues = new LinkedList<>();
     }
 
     @Override
     public void apply(AST ast) {
-        //variableValues = new HANLinkedList<>();
-
+        evaluateStyleSheet(ast.root);
     }
 
-    
+    private void evaluateStyleSheet(Stylesheet stylesheet) {
+        for (ASTNode child : stylesheet.getChildren()) {
+            if (child instanceof Stylerule) {
+                evaluateStylerule((Stylerule) child);
+            }
+        }
+    }
+
+    private void evaluateStylerule(Stylerule stylerule) {
+        for(ASTNode child : stylerule.getChildren()) {
+            if (child instanceof Declaration) {
+                evaluateDeclaration((Declaration) child);
+            }
+        }
+    }
+
+    private void evaluateDeclaration(Declaration declaration) {
+        Expression expression;
+    }
+
+
 }

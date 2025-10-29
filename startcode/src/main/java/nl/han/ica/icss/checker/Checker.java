@@ -1,10 +1,8 @@
 package nl.han.ica.icss.checker;
 
 import nl.han.ica.datastructures.IHANLinkedList;
-import nl.han.ica.icss.ast.AST;
-import nl.han.ica.icss.ast.ASTNode;
-import nl.han.ica.icss.ast.Stylerule;
-import nl.han.ica.icss.ast.Stylesheet;
+import nl.han.ica.icss.ast.*;
+import nl.han.ica.icss.ast.literals.*;
 import nl.han.ica.icss.ast.types.ExpressionType;
 
 import java.util.HashMap;
@@ -29,7 +27,46 @@ public class Checker {
     }
 
     private void checkStylerule(Stylerule stylerule) {
-        for (ASTNode child: stylerule.getChildren()) {}
+        for (ASTNode child: stylerule.getChildren()) {
+            if (child instanceof Declaration) {
+                checkDeclaration((Declaration) child);
+            }
+        }
+    }
+
+    private void checkDeclaration(Declaration declaration) {
+        ExpressionType expressionType = checkExpression(declaration.expression);
+
+        switch (declaration.property.name) {
+            case "width":
+            case "height":
+                if (expressionType != ExpressionType.PIXEL && expressionType != ExpressionType.PERCENTAGE) {
+//                    error
+                } break;
+
+            case "color":
+            case "background-color":
+                if (expressionType != ExpressionType.COLOR) {
+//                    error
+                } break;
+
+            default:
+//                error
+                break;
+        }
+    }
+
+    private ExpressionType checkExpression(Expression expression) {
+        if (expression instanceof ColorLiteral) {
+            return ExpressionType.COLOR;
+        }
+        if (expression instanceof PixelLiteral) {
+            return ExpressionType.PIXEL;
+        }
+        if (expression instanceof PercentageLiteral) {
+            return ExpressionType.PERCENTAGE;
+        }
+        return ExpressionType.UNDEFINED;
     }
 
 
