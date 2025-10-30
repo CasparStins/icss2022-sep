@@ -55,6 +55,7 @@ body: (declaration | ifClause | variableAssignment)*;
 declaration: LOWER_IDENT COLON expression SEMICOLON;
 variableAssignment: CAPITAL_IDENT ASSIGNMENT_OPERATOR expression SEMICOLON;
 
+// OPEN_BRACE body CLOSE_BRACE --> Dit gedeelte had naar een nieuw iets gekunt ivm repeatability.
 ifClause: IF BOX_BRACKET_OPEN expression BOX_BRACKET_CLOSE OPEN_BRACE body CLOSE_BRACE elseClause?;
 elseClause: ELSE OPEN_BRACE body CLOSE_BRACE;
 
