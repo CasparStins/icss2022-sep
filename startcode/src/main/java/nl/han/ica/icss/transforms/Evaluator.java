@@ -2,6 +2,7 @@ package nl.han.ica.icss.transforms;
 
 import jdk.jfr.Percentage;
 import nl.han.ica.icss.ast.*;
+import nl.han.ica.icss.ast.literals.BoolLiteral;
 import nl.han.ica.icss.ast.literals.PercentageLiteral;
 import nl.han.ica.icss.ast.literals.PixelLiteral;
 import nl.han.ica.icss.ast.literals.ScalarLiteral;
@@ -158,7 +159,17 @@ public class Evaluator implements Transform {
     }
 
 //    If else
-    private Collection<? extends ASTNode> applyIfClause(IfClause node) {
-        return null;
+    private List<ASTNode> applyIfClause(IfClause ifClause) {
+        boolean isTrue = ((BoolLiteral) Objects.requireNonNull(evaluateExpression(ifClause.conditionalExpression))).value;
+        if (isTrue) {
+            applyBody(ifClause.body);
+            return ifClause.body;
+        } else if (ifClause.elseClause != null) {
+            applyBody(ifClause.elseClause.body);
+            return ifClause.elseClause.body;
+        } else {
+            return new ArrayList<>();
+        }
     }
+
 }
