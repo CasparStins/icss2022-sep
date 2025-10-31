@@ -25,7 +25,8 @@ public class Generator {
 				if (child instanceof Declaration) {
 					Declaration declaration = (Declaration) child;
 
-					string.append(declaration.property.name)
+					string.append("  ")
+							.append(declaration.property.name)
 							.append(": ")
 							.append(expressionToString(declaration.expression))
 							.append(";\n");

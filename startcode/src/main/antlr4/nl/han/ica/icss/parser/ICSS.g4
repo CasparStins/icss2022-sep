@@ -59,6 +59,7 @@ variableAssignment: CAPITAL_IDENT ASSIGNMENT_OPERATOR expression SEMICOLON;
 ifClause: IF BOX_BRACKET_OPEN expression BOX_BRACKET_CLOSE OPEN_BRACE body CLOSE_BRACE elseClause?;
 elseClause: ELSE OPEN_BRACE body CLOSE_BRACE;
 
+//reken volgorde
 expression
     : literal
     | CAPITAL_IDENT
